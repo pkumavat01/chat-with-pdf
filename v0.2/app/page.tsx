@@ -71,6 +71,27 @@ export default function Page() {
               const Component = widget.Component as React.ComponentType<any>
               return <Component key={inv.toolCallId} {...(inv.args as object)} />
             })}
+
+            {m.role === 'assistant' &&
+              !m.content &&
+              (!m.toolInvocations || m.toolInvocations.length === 0) &&
+              !isLoading && (
+                <div
+                  style={{
+                    padding: 12,
+                    background: '#fef2f2',
+                    border: '1px solid #fca5a5',
+                    borderRadius: 6,
+                    color: '#7f1d1d',
+                    fontSize: 13,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  ⚠️ The model returned an empty response. This usually means a Groq rate limit,
+                  a network error, or the model didn't emit a valid tool call. Try again, or
+                  check the dev server logs (look for "[api/chat] stream error").
+                </div>
+              )}
           </div>
         ))}
         {isLoading && <div style={{ color: '#666', padding: 8 }}>Thinking…</div>}
