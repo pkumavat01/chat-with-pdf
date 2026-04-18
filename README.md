@@ -1,46 +1,71 @@
-![Chat with PDF](assets/header.png)
+# Gen-UI Docs Chatbot (working title)
 
-# Chat with PDF
+> An open-source chatbot you can drop into any docs site. Configure your sources and your custom React widgets in one file, get a chatbot that streams interactive UI — not just markdown — back to your users.
 
-An AI-powered PDF assistant that lets you chat with any PDF document. Ask questions about the content, get answers with page citations, and optionally generate quizzes to test your comprehension. Uses RAG (Retrieval-Augmented Generation) to find relevant passages and provide accurate, sourced answers. Built with [Mastra](https://mastra.ai).
+**Status:** v0.1 ✅ done (markdown chatbot for AEM EDS docs running locally on port 3000). v0.2 in progress (generative UI). The reusable npm package lands in v0.3.
 
-## Why we built this
+## Why this exists
 
-Putting an entire PDF in a context window hits token limits, wastes money on irrelevant tokens, and causes context drift—where the model loses focus as it wades through pages of text that don't matter. RAG solves this: the PDF gets chunked into vector embeddings, and when you ask a question, only the most relevant chunks are included in the prompt. This keeps your costs down, avoids context limits, and gives the model focused context for better answers.
+The current options for adding an AI chatbot to a docs site or product all have a flaw:
 
-This template shows how Mastra's RAG capabilities, vector storage, and agent workflows fit together—and gives you a starting point to build your own document chat experience.
+| Type | Examples | Flaw |
+|---|---|---|
+| Dev toolkits | Vercel AI SDK, CopilotKit, assistant-ui | Powerful primitives, but everyone re-writes the same RAG + tool registry + UI glue. |
+| Commercial SaaS | Kapa.ai, Inkeep, Mintlify AI | Closed source, paid per seat, **markdown-only answers** — no custom interactive components. |
+| OSS docs bots | DocsGPT, Danswer | Open and configurable, but **no generative UI** — just markdown in, markdown out. |
 
-## Demo
+This project aims to fill the empty slot: **OSS + config-driven + generative UI + a per-project widget registry.**
 
-<video controls width="640" height="360" src="https://res.cloudinary.com/mastra-assets/video/upload/v1772538110/template-chat-with-pdf_uamb2s.mp4"></video>
+The motivating use case is the [Adobe AEM EDS](https://www.aem.live/developer/component-model-definitions) developer docs, where beginners struggle to learn from text alone and would benefit hugely from a bot that can render interactive component scaffolders, live previews, and code editors.
 
-This demo runs in Mastra Studio, but you can connect this agent to your React, Next.js, or Vue app using the [Mastra Client SDK](https://mastra.ai/docs/server/mastra-client) or agentic UI libraries like [AI SDK UI](https://mastra.ai/guides/build-your-ui/ai-sdk-ui), [CopilotKit](https://mastra.ai/guides/build-your-ui/copilotkit), or [Assistant UI](https://mastra.ai/guides/build-your-ui/assistant-ui).
+## Tech stack (deliberately minimal)
 
-## Features
+- **Next.js** — UI + API in one repo, free hosting on Vercel
+- **Vercel AI SDK** (`ai`, `@ai-sdk/groq`) — provider-agnostic LLM library
+- **Groq + Llama 3.3 70B** — free tier, fast, no credit card required
+- **TypeScript** end to end
 
-- **No token limits**: chat with 500-page textbooks as easily as a 5-page memo
-- **Page citations**: every answer references its source pages so you can verify
-- **Quiz generation**: active recall quizzes generated from your actual content
+**No Mastra, no LangChain, no CopilotKit.** This package will be built directly on Vercel AI SDK to keep the dependency tree light for future users.
+
+## Repo layout
+
+```
+.
+├── docs/
+│   ├── architecture-v0.1.md      ← design + diagrams for v0.1
+│   └── architecture-v0.2.md      ← design + diagrams for v0.2 (gen UI)
+├── v0.1/                          ← working markdown chatbot (port 3000)
+│   ├── app/
+│   ├── docs/                      ← AEM EDS markdown knowledge base
+│   ├── README.md
+│   └── package.json
+├── v0.2/                          ← gen UI version, scaffold only (port 3001)
+│   ├── app/
+│   ├── components/                ← React widgets the LLM can render
+│   ├── lib/                       ← widget registry
+│   └── package.json
+└── README.md                      ← you are here
+```
 
 ## Quick start
 
-1. **Clone the template**
-   - Run `npx create-mastra@latest --template chat-with-pdf` to scaffold the project locally.
-2. **Add your API key**
-   - Copy `.env.example` to `.env` and fill in your OpenAI API key.
-3. **Start the dev server**
-   - Run `npm run dev` and open [localhost:4111](http://localhost:4111) to try it out.
+```bash
+cd v0.1
+npm install
+cp .env.example .env.local         # paste your free Groq API key
+npm run dev
+```
 
-Open Studio and start chatting with the PDF agent. Provide a PDF URL to index it, then ask questions about the content or request a quiz on specific pages or topics. The agent searches the indexed content, answers questions with page citations, and can generate comprehension quizzes from actual passages.
+See [v0.1/README.md](v0.1/README.md) for full instructions and [docs/architecture-v0.1.md](docs/architecture-v0.1.md) for the design.
 
-> Need a PDF to try? Grab our free book, [Principles of Building AI Agents](https://mastra.ai/books/principles-of-building-ai-agents).
+## Roadmap
 
-## Making it yours
+| Version | What | Status |
+|---|---|---|
+| **v0.1** | Working markdown chatbot for AEM EDS docs. No widgets, no embeddings. | ✅ done (local) |
+| **v0.2** | Generative UI — LLM can render custom React widgets via tool calls. One demo widget + a 60s video. | 🚧 in progress (architecture + scaffold ready) |
+| **v0.3** | Extract into reusable npm package: `defineChatbot({ sources, widgets, llm })`. Publish to npm. | ⏳ planned |
 
-Swap in a different embedding model, adjust the chunking strategy, or wire the agent into your app using the [Mastra Client SDK](https://mastra.ai/docs/server/mastra-client). You can also swap out LibSQL for another vector database — Mastra supports [many options](https://mastra.ai/docs/storage/vector-databases) including Pinecone, Qdrant, Chroma, pgvector, and more. The agent, tools, and workflow are all in `src/` — edit them directly to fit your use case.
+## License
 
-## About Mastra templates
-
-[Mastra templates](https://mastra.ai/templates) are ready-to-use projects that show off what you can build — clone one, poke around, and make it yours. They live in the [Mastra monorepo](https://github.com/mastra-ai/mastra) and are automatically synced to standalone repositories for easier cloning.
-
-Want to contribute? See [CONTRIBUTING.md](https://github.com/mastra-ai/mastra/blob/main/templates/template-chat-with-pdf/CONTRIBUTING.md).
+MIT (intended). To be confirmed when the package is published.
